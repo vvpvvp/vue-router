@@ -1,0 +1,35 @@
+{
+    "name": "vue-router",
+    "version": "1.0.0",
+    "description": "vue路由管理",
+    "main": "build/vue-router.js",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/vvpvvp/vue-router.git"
+    },
+    "keywords": [
+        "vue-router",
+        "vue",
+        "router"
+    ],
+    "author": {
+        "name": "alias"
+    },
+    "license": "The MIT License",
+    "_npmUser": {
+        "name": "vvpvvp",
+        "email": "a8918929@sina.com.cn"
+    },
+    "dependencies": {},
+    "bugs": {
+        "url": "https://github.com/vvpvvp/vue-router/issues"
+    },
+    "babel": {
+        "presets": ["es2015"]
+    },
+    "homepage": "https://github.com/vvpvvp/vue-router#readme",
+    "readmeFilename": "README.md",
+    "scripts": {
+        "build": "babel src -d build"
+    }
+}
