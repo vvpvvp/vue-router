@@ -7,7 +7,7 @@
 ##Install
 ###npm install
 ```
-npm install umock
+npm install vue-router-tiny
 ```
 
 ###Download
@@ -18,7 +18,7 @@ git clone https://github.com/vvpvvp/vue-router
 
 *router.js*
 
-```javescript
+```javascript
 import Router from '../plugin/vue-router';
 import create from '../../components/create.vue';
 import main from '../../components/main.vue';
