@@ -1,7 +1,7 @@
 {
-    "name": "vue-router",
-    "version": "1.0.0",
-    "description": "vue路由管理",
+    "name": "vue-router-tiny",
+    "version": "1.0.2",
+    "description": "A router for Vue.js",
     "main": "build/vue-router.js",
     "repository": {
         "type": "git",
