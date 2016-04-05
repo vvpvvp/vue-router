@@ -1,35 +1,42 @@
 {
-    "name": "vue-router-tiny",
-    "version": "1.0.2",
-    "description": "A router for Vue.js",
-    "main": "build/vue-router.js",
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/vvpvvp/vue-router.git"
-    },
-    "keywords": [
-        "vue-router",
-        "vue",
-        "router"
-    ],
-    "author": {
-        "name": "alias"
-    },
-    "license": "The MIT License",
-    "_npmUser": {
-        "name": "vvpvvp",
-        "email": "a8918929@sina.com.cn"
-    },
-    "dependencies": {},
-    "bugs": {
-        "url": "https://github.com/vvpvvp/vue-router/issues"
-    },
-    "babel": {
-        "presets": ["es2015"]
-    },
-    "homepage": "https://github.com/vvpvvp/vue-router#readme",
-    "readmeFilename": "README.md",
-    "scripts": {
-        "build": "babel src -d build"
-    }
+  "name": "vue-router-tiny",
+  "version": "1.0.3",
+  "description": "A router for Vue.js",
+  "main": "build/vue-router.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vvpvvp/vue-router.git"
+  },
+  "keywords": [
+    "vue-router",
+    "vue",
+    "router"
+  ],
+  "author": {
+    "name": "alias"
+  },
+  "license": "The MIT License",
+  "_npmUser": {
+    "name": "vvpvvp",
+    "email": "a8918929@sina.com.cn"
+  },
+  "dependencies": {},
+  "bugs": {
+    "url": "https://github.com/vvpvvp/vue-router/issues"
+  },
+  "babel": {
+    "presets": [
+      "es2015"
+    ]
+  },
+  "homepage": "https://github.com/vvpvvp/vue-router#readme",
+  "readmeFilename": "README.md",
+  "scripts": {
+    "build": "babel src -d build"
+  },
+  "readme": "\n# vue-router\n##A router for Vue.js\n综合配置众多后台服务的反向代理，可以集成不同的后台，可以让前端统一访问接口。  \n并且通过配置mock返回的数据，统一开发流程。  \n并且可以修改原本返回的数据，解决开发中的数据需求。  \n##Install\n###npm install\n```\nnpm install vue-router-tiny\n```\n\n###Download\n```\ngit clone https://github.com/vvpvvp/vue-router\n```\n##Use\n\n*router.js*\n\n```javascript\nimport Router from '../plugin/vue-router';\nimport create from '../../components/create.vue';\nimport main from '../../components/main.vue';\nimport welcome from '../../components/welcome.vue';\n\nvar routes = {\n    '/': {\n        component: main,\n        subRoutes: {\n            '/create/:id': {\n                name: 'create',\n                component: create\n            },\n            '/welcome': {\n                component: function(resolve){\n                    require([\"../../components/welcome.vue\"],resolve);\n                }\n            },\n            \"/alert\":function(){\n                Log(\"test\");\n            }\n        }\n    }\n};\n\nlet VueParam = {\n    el: '#body'\n};\n\nVue.use(Router);\nvar router = new Router({\n    history:false\n});\n\nrouter.map(routes);\nrouter.start(VueParam);\n\nexport default router;\n\n```\n\n*menu.vue*\n```html\n<template>\n<div class=\"menu\">\n\t<ul class=\"menuList\">\n        <li><a v-link.literal=\"/welcome\">首页</a></li>\n        <li><a v-link=\"{name:'create',params:{id:b},query:{query:1}}\">测试{{a}}</a></li>\n        <li><a v-link=\"{name:'create',params:{id:a},query:{query:1}}\">测试</a></li>\n        <li><a v-link.literal=\"/alert\">测试</a></li>\n\t</ul>\n</div>\n</template>\n\n```\n*create.vue*\n```html\n<template>\n<div>\n\t<button @click=\"go\" class=\"button\">首页</button>\n</div>\n</template>\n<script type=\"text/javascript\">\nimport Router from '../js/common/router';\nexport default {\n    data() {\n        return {};\n    },\n    methods:{\n    \tgo(){\n            Router.go(\"/welcome\");\n    \t}\n    }\n}\n</script>\n\n```\n\n\n##Dependences\n- [Director](https://github.com/flatiron/director)\n- [Vue](http://www.vuejs.org/)\n",
+  "gitHead": "518f16e8b0e532513d564d6bd0d863078f15af22",
+  "_id": "vue-router-tiny@1.0.3",
+  "_shasum": "947b820b0c1c8bf5c097313af9a36d0bd0e94d22",
+  "_from": "vue-router-tiny@*"
 }

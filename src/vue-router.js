@@ -135,8 +135,8 @@ class VueRouter {
                 url = vueRouter.routerNames[value.name].url;
             }
             if (value.params) {
-                for (let [key, val] of Object.entries(value.params)) {
-                    url = url.replace(new RegExp("\:" + key + "", 'g'), val);
+                for (let key of Object.keys(value.params)) {
+                    url = url.replace(new RegExp("\:" + key + "", 'g'), value.params[key]);
                 }
             }
 
@@ -196,7 +196,8 @@ class VueRouter {
     dealRoutes({ routes, parent_url = "", parent_ids = [] }) {
         let vueRouter = this;
         let count = 0;
-        for (let [i, route] of Object.entries(routes)) {
+        for (let i of Object.keys(routes)) {
+            let route = routes[i];
             let _id = (parent_ids[0] || "VueRouter") + "_" + count++;
             let url = (parent_url == "/" ? "" : parent_url) + i;
             if (Utils.isFunction(route)) {

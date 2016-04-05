@@ -1,7 +1,5 @@
 "use strict";
 
-var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
-
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 Object.defineProperty(exports, "__esModule", {
@@ -164,13 +162,10 @@ var VueRouter = function () {
                     var _iteratorError = undefined;
 
                     try {
-                        for (var _iterator = Object.entries(value.params)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-                            var _step$value = _slicedToArray(_step.value, 2);
+                        for (var _iterator = Object.keys(value.params)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                            var key = _step.value;
 
-                            var key = _step$value[0];
-                            var val = _step$value[1];
-
-                            url = url.replace(new RegExp("\:" + key + "", 'g'), val);
+                            url = url.replace(new RegExp("\:" + key + "", 'g'), value.params[key]);
                         }
                     } catch (err) {
                         _didIteratorError = true;
@@ -261,11 +256,9 @@ var VueRouter = function () {
 
             try {
                 var _loop = function _loop() {
-                    var _step2$value = _slicedToArray(_step2.value, 2);
+                    var i = _step2.value;
 
-                    var i = _step2$value[0];
-                    var route = _step2$value[1];
-
+                    var route = routes[i];
                     var _id = (parent_ids[0] || "VueRouter") + "_" + count++;
                     var url = (parent_url == "/" ? "" : parent_url) + i;
                     if (_utils2.default.isFunction(route)) {
@@ -328,7 +321,7 @@ var VueRouter = function () {
                     }
                 };
 
-                for (var _iterator2 = Object.entries(routes)[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+                for (var _iterator2 = Object.keys(routes)[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
                     _loop();
                 }
             } catch (err) {

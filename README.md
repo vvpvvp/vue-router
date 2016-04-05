@@ -99,5 +99,5 @@ export default {
 
 
 ##Dependences
-- [director](https://github.com/flatiron/director)
+- [Director](https://github.com/flatiron/director)
 - [Vue](http://www.vuejs.org/)
