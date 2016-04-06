@@ -27,6 +27,16 @@ let getQueryStringArgs = (qs) => {
     return args;
 }
 
+function getParam(url) {
+    let ps = [],
+        patt = /\/\:(\w+)/g,
+        result;
+    while ((result = patt.exec(url)) != null) {
+        ps.push(result[1]);
+    }
+    return ps;
+}
+
 class VueRouter {
     constructor(options) {
         if (!installed) {
@@ -44,12 +54,17 @@ class VueRouter {
         this.components = {};
         this.struct = {};
         this.options = {};
+        this.nowRoute = null;
         Object.assign(this.options, defaultOption, options || {});
         this.options.html5history = this.options.history;
         this.options.notfound = function() {
-                vueRouter.getRouter().setRoute("/");
+            vueRouter.getRouter().setRoute("/");
+        };
+        this.options.before = function() {
+            if (Utils.isObject(vueRouter.nowRoute) && Utils.isFunction(vueRouter.nowRoute.leave)) {
+                vueRouter.nowRoute.leave();
             }
-            // Object.freeze(this);
+        }
         return this;
     };
 
@@ -200,59 +215,88 @@ class VueRouter {
             let route = routes[i];
             let _id = (parent_ids[0] || "VueRouter") + "_" + count++;
             let url = (parent_url == "/" ? "" : parent_url) + i;
+
+            let routeSet = vueRouter.routerParam[url] = {};
+
             if (Utils.isFunction(route)) {
                 let list = [...parent_ids];
-                vueRouter.routerParam[url] = function() {
+                routeSet.on = function() {
+                    vueRouter.nowRoute = routeSet;
                     vueRouter.removeComponents = false;
-                    vueRouter.changeComponents({ list, vm: vueRouter.vue, removeComponents: false });
-                    route(...arguments);
-                };
-            } else if (Utils.isObject(route) && route.component) {
-
-                vueRouter.components[_id] = route.component;
-
-                let list = vueRouter.struct[_id] = [_id, ...parent_ids];
-
-                function getParam(url) {
-                    let ps = [],
-                        patt = /\/\:(\w+)/g,
-                        result;
-                    while ((result = patt.exec(url)) != null) {
-                        ps.push(result[1]);
+                    vueRouter.changeComponents({ list, vm: vueRouter.vue });
+                    vueRouter.delayOn = () => {
+                        route(...arguments);
                     }
-                    return ps;
+                };
+            } else if (Utils.isObject(route)) {
+
+                let routeSet_on = function() {
+                    vueRouter.nowRoute = routeSet;
+                    vueRouter.delayOn = () => {
+                        if (Utils.isFunction(route.on)) {
+                            route.on(...arguments);
+                        }
+                    }
+                };
+
+                if (Utils.isFunction(route.before)) {
+                    routeSet.before = route.before;
                 }
-                let params = getParam(url);
-                if (route.name) vueRouter.routerNames[route.name] = {
-                    url: url,
-                    params: params
-                };
-                vueRouter.routerParam[url] = function() {
-                    let routeObject = {};
-                    let urlParam = {},
-                        queryParam = {};
-                    for (let i = params.length - 1; i >= 0; i--) {
-                        if (arguments.length > i) urlParam[params[i]] = arguments[i];
-                    }
-                    let _url = vueRouter._getNowPath();
-                    vueRouter.$route.params = urlParam;
-                    vueRouter.$route.url = _url;
-                    vueRouter.$route.query = getQueryStringArgs(_url);
 
-                    // vueRouter.vue.$route=vueRouter.$route;
-                    if (Utils.isEqual(vueRouter.vue.$route, vueRouter.$route)) {
-                        return true;
+                if (Utils.isFunction(route.after)) {
+                    routeSet.after = route.after;
+                }
+                if (Utils.isFunction(route.leave)) {
+                    routeSet.leave = route.leave;
+                }
+
+                if (route.component) {
+
+                    vueRouter.components[_id] = route.component;
+
+                    let list = [_id, ...parent_ids];
+
+                    let params = getParam(url);
+                    if (route.name) vueRouter.routerNames[route.name] = {
+                        url: url,
+                        params: params
+                    };
+                    routeSet.on = function() {
+                        routeSet_on(...arguments);
+                        let routeObject = {};
+                        let urlParam = {},
+                            queryParam = {};
+                        for (let i = params.length - 1; i >= 0; i--) {
+                            if (arguments.length > i) urlParam[params[i]] = arguments[i];
+                        }
+                        let _url = vueRouter._getNowPath();
+                        vueRouter.$route.params = urlParam;
+                        vueRouter.$route.url = _url;
+                        vueRouter.$route.query = getQueryStringArgs(_url);
+
+                        // vueRouter.vue.$route=vueRouter.$route;
+                        if (Utils.isEqual(vueRouter.vue.$route, vueRouter.$route)) {
+                            return true;
+                        }
+                        Object.assign(vueRouter.vue.$route, vueRouter.$route);
+                        vueRouter.vue.$nextTick(() => {
+                            vueRouter.removeComponents = true;
+                            vueRouter.changeComponents({ list, vm: vueRouter.vue });
+                        });
                     }
-                    Object.assign(vueRouter.vue.$route, vueRouter.$route);
-                    vueRouter.vue.$nextTick(() => {
-                        vueRouter.removeComponents = true;
+
+                    if (route.subRoutes) {
+                        vueRouter.dealRoutes({ routes: route.subRoutes, parent_url: i, parent_ids: list });
+                    }
+                } else {
+                    let list = [...parent_ids];
+                    routeSet.on = function() {
+                        routeSet_on(...arguments);
+                        vueRouter.removeComponents = false;
                         vueRouter.changeComponents({ list, vm: vueRouter.vue });
-                    });
+                    };
                 }
 
-                if (route.subRoutes) {
-                    vueRouter.dealRoutes({ routes: route.subRoutes, parent_url: i, parent_ids: vueRouter.struct[_id] });
-                }
             }
         }
     };
@@ -261,14 +305,20 @@ class VueRouter {
         let vueRouter = this;
         if (list.length > 0) {
             vm.$broadcast("changeComponents", list);
-        } else if (vueRouter.removeComponents) {
-            vm.$broadcast("removeComponents");
+        } else {
+            if (vueRouter.removeComponents) {
+                vm.$broadcast("removeComponents");
+            }
+            if (vueRouter.delayOn) {
+                vm.$nextTick(() => {
+                    if (vueRouter.delayOn) vueRouter.delayOn();
+                });
+            }
         }
     }
 }
 
 VueRouter.install = function(externalVue) {
-    /* istanbul ignore if */
     if (installed) {
         warn('already installed.')
         return

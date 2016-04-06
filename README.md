@@ -1,9 +1,14 @@
 
 # vue-router
 ##A router for Vue.js
-综合配置众多后台服务的反向代理，可以集成不同的后台，可以让前端统一访问接口。  
-并且通过配置mock返回的数据，统一开发流程。  
-并且可以修改原本返回的数据，解决开发中的数据需求。  
+
+重写vue的router，使用Director作为底层框架。 
+
+去除vue-router原生bug： 
+- 点击两次记录两次访问，配置单一； 
+- route同配置无法重加载问题，"/example/:id" url新的id无法重加载。  
+- 支持函数处理的url跳转
+
 ##Install
 ###npm install
 ```
