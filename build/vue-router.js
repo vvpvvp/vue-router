@@ -44,6 +44,16 @@ var getQueryStringArgs = function getQueryStringArgs(qs) {
     return args;
 };
 
+function getParam(url) {
+    var ps = [],
+        patt = /\/\:(\w+)/g,
+        result = undefined;
+    while ((result = patt.exec(url)) != null) {
+        ps.push(result[1]);
+    }
+    return ps;
+}
+
 var VueRouter = function () {
     function VueRouter(options) {
         _classCallCheck(this, VueRouter);
@@ -60,12 +70,17 @@ var VueRouter = function () {
         this.components = {};
         this.struct = {};
         this.options = {};
+        this.nowRoute = null;
         Object.assign(this.options, defaultOption, options || {});
         this.options.html5history = this.options.history;
         this.options.notfound = function () {
             vueRouter.getRouter().setRoute("/");
         };
-        // Object.freeze(this);
+        this.options.before = function () {
+            if (_utils2.default.isObject(vueRouter.nowRoute) && _utils2.default.isFunction(vueRouter.nowRoute.leave)) {
+                vueRouter.nowRoute.leave();
+            }
+        };
         return this;
     }
 
@@ -261,61 +276,97 @@ var VueRouter = function () {
                     var route = routes[i];
                     var _id = (parent_ids[0] || "VueRouter") + "_" + count++;
                     var url = (parent_url == "/" ? "" : parent_url) + i;
+
+                    var routeSet = vueRouter.routerParam[url] = {};
+
                     if (_utils2.default.isFunction(route)) {
                         (function () {
                             var list = [].concat(_toConsumableArray(parent_ids));
-                            vueRouter.routerParam[url] = function () {
+                            routeSet.on = function () {
+                                var _arguments = arguments;
+
+                                vueRouter.nowRoute = routeSet;
                                 vueRouter.removeComponents = false;
-                                vueRouter.changeComponents({ list: list, vm: vueRouter.vue, removeComponents: false });
-                                route.apply(undefined, arguments);
+                                vueRouter.changeComponents({ list: list, vm: vueRouter.vue });
+                                vueRouter.delayOn = function () {
+                                    route.apply(undefined, _arguments);
+                                };
                             };
                         })();
-                    } else if (_utils2.default.isObject(route) && route.component) {
+                    } else if (_utils2.default.isObject(route)) {
                         (function () {
-                            var getParam = function getParam(url) {
-                                var ps = [],
-                                    patt = /\/\:(\w+)/g,
-                                    result = undefined;
-                                while ((result = patt.exec(url)) != null) {
-                                    ps.push(result[1]);
-                                }
-                                return ps;
+
+                            var routeSet_on = function routeSet_on() {
+                                var _arguments2 = arguments;
+
+                                vueRouter.nowRoute = routeSet;
+                                vueRouter.delayOn = function () {
+                                    if (_utils2.default.isFunction(route.on)) {
+                                        route.on.apply(route, _arguments2);
+                                    }
+                                };
                             };
 
-                            vueRouter.components[_id] = route.component;
+                            if (_utils2.default.isFunction(route.before)) {
+                                routeSet.before = route.before;
+                            }
 
-                            var list = vueRouter.struct[_id] = [_id].concat(_toConsumableArray(parent_ids));
+                            if (_utils2.default.isFunction(route.after)) {
+                                routeSet.after = route.after;
+                            }
+                            if (_utils2.default.isFunction(route.leave)) {
+                                routeSet.leave = route.leave;
+                            }
 
-                            var params = getParam(url);
-                            if (route.name) vueRouter.routerNames[route.name] = {
-                                url: url,
-                                params: params
-                            };
-                            vueRouter.routerParam[url] = function () {
-                                var routeObject = {};
-                                var urlParam = {},
-                                    queryParam = {};
-                                for (var _i = params.length - 1; _i >= 0; _i--) {
-                                    if (arguments.length > _i) urlParam[params[_i]] = arguments[_i];
-                                }
-                                var _url = vueRouter._getNowPath();
-                                vueRouter.$route.params = urlParam;
-                                vueRouter.$route.url = _url;
-                                vueRouter.$route.query = getQueryStringArgs(_url);
+                            if (route.component) {
+                                (function () {
 
-                                // vueRouter.vue.$route=vueRouter.$route;
-                                if (_utils2.default.isEqual(vueRouter.vue.$route, vueRouter.$route)) {
-                                    return true;
-                                }
-                                Object.assign(vueRouter.vue.$route, vueRouter.$route);
-                                vueRouter.vue.$nextTick(function () {
-                                    vueRouter.removeComponents = true;
-                                    vueRouter.changeComponents({ list: list, vm: vueRouter.vue });
-                                });
-                            };
+                                    vueRouter.components[_id] = route.component;
 
-                            if (route.subRoutes) {
-                                vueRouter.dealRoutes({ routes: route.subRoutes, parent_url: i, parent_ids: vueRouter.struct[_id] });
+                                    var list = [_id].concat(_toConsumableArray(parent_ids));
+
+                                    var params = getParam(url);
+                                    if (route.name) vueRouter.routerNames[route.name] = {
+                                        url: url,
+                                        params: params
+                                    };
+                                    routeSet.on = function () {
+                                        routeSet_on.apply(undefined, arguments);
+                                        var routeObject = {};
+                                        var urlParam = {},
+                                            queryParam = {};
+                                        for (var _i = params.length - 1; _i >= 0; _i--) {
+                                            if (arguments.length > _i) urlParam[params[_i]] = arguments[_i];
+                                        }
+                                        var _url = vueRouter._getNowPath();
+                                        vueRouter.$route.params = urlParam;
+                                        vueRouter.$route.url = _url;
+                                        vueRouter.$route.query = getQueryStringArgs(_url);
+
+                                        // vueRouter.vue.$route=vueRouter.$route;
+                                        if (_utils2.default.isEqual(vueRouter.vue.$route, vueRouter.$route)) {
+                                            return true;
+                                        }
+                                        Object.assign(vueRouter.vue.$route, vueRouter.$route);
+                                        vueRouter.vue.$nextTick(function () {
+                                            vueRouter.removeComponents = true;
+                                            vueRouter.changeComponents({ list: list, vm: vueRouter.vue });
+                                        });
+                                    };
+
+                                    if (route.subRoutes) {
+                                        vueRouter.dealRoutes({ routes: route.subRoutes, parent_url: i, parent_ids: list });
+                                    }
+                                })();
+                            } else {
+                                (function () {
+                                    var list = [].concat(_toConsumableArray(parent_ids));
+                                    routeSet.on = function () {
+                                        routeSet_on.apply(undefined, arguments);
+                                        vueRouter.removeComponents = false;
+                                        vueRouter.changeComponents({ list: list, vm: vueRouter.vue });
+                                    };
+                                })();
                             }
                         })();
                     }
@@ -348,8 +399,15 @@ var VueRouter = function () {
             var vueRouter = this;
             if (list.length > 0) {
                 vm.$broadcast("changeComponents", list);
-            } else if (vueRouter.removeComponents) {
-                vm.$broadcast("removeComponents");
+            } else {
+                if (vueRouter.removeComponents) {
+                    vm.$broadcast("removeComponents");
+                }
+                if (vueRouter.delayOn) {
+                    vm.$nextTick(function () {
+                        if (vueRouter.delayOn) vueRouter.delayOn();
+                    });
+                }
             }
         }
     }]);
@@ -358,7 +416,6 @@ var VueRouter = function () {
 }();
 
 VueRouter.install = function (externalVue) {
-    /* istanbul ignore if */
     if (installed) {
         warn('already installed.');
         return;
