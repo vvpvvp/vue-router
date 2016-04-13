@@ -1,5 +1,5 @@
+#vue-router-tiny
 
-# vue-router
 ##A router for Vue.js
 
 重写vue的router，使用Director作为底层框架。 
@@ -102,8 +102,6 @@ export default {
 </script>
 
 ```
-
-
 ##Dependences
 - [Director](https://github.com/flatiron/director)
 - [Vue](http://www.vuejs.org/)
