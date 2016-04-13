@@ -6,7 +6,7 @@
 
 去除vue-router原生bug： 
 - HTML5模式下，访问两次同样的地址，记录两次访问
-- 对于"/example/:id","/example/1"跳转到"/example/2"时不会重新渲染。  
+- 配置/example/:id ,/example/1 跳转到/example/2 时不会重新渲染。  
 - 支持url跳转进行函数处理
 
 
@@ -23,13 +23,34 @@ git clone https://github.com/vvpvvp/vue-router
 
 ##option
 
-- `history`:是否为html5模式
-- `rootUrl`:为所有的url都添加root，全局添加前缀url
-- `defaultUrl`:默认的url，当访问的地址没有route配置时，自动跳转。
-- `before`:所有的url跳转之前执行，返回false则停止跳转。
+- **history**: 是否为html5模式
+- **rootUrl**: 为所有的url都添加root，全局添加前缀url
+- **defaultUrl**: 默认的url，当访问的地址没有route配置时，自动跳转。
+- **before**: 所有的url跳转之前执行，返回false则停止跳转。
 
 
 ##Use
+
+**main.html**
+
+```html
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>demo</title>
+</head>
+
+<body>
+    <div id="body">
+        <router-view></router-view>
+    </div>
+</body>
+
+</html>
+
+```
+
 
 *js/router.js*
 
@@ -49,12 +70,15 @@ var routes = {
             },
             '/create2/:id': {
                 name: 'create2',
+                before:function(){
+                    console.log("welcome before");
+                    // return false;//会让页面无法跳转/welcome
+                },
                 on:function(){
-                    alert(1);
+                    console.log("welcome on");
                 },
                 leave:function(){
-                    alert(2);
-
+                    console.log("welcome leave");
                 },
                 component: create
             },
@@ -64,7 +88,7 @@ var routes = {
                 }
             },
             "/alert":function(){
-                Log("test");
+                console.log("alert");
             },
             "/alert2":{
                 on:function(){
