@@ -5,9 +5,9 @@
 重写vue的router，使用Director作为底层框架。 
 
 去除vue-router原生bug： 
-- 点击两次记录两次访问，配置单一； 
-- route同配置无法重加载问题，"/example/:id" url新的id无法重加载。  
-- 支持函数处理的url跳转
+- HTML5模式下，访问两次同样的地址，记录两次访问
+- 对于"/example/:id","/example/1"跳转到"/example/2"时不会重新渲染。  
+- 支持url跳转进行函数处理
 
 
 ##Install
@@ -20,9 +20,18 @@ npm install vue-router-tiny
 ```
 git clone https://github.com/vvpvvp/vue-router
 ```
+
+##option
+
+- `history`:是否为html5模式
+- `rootUrl`:为所有的url都添加root，全局添加前缀url
+- `defaultUrl`:默认的url，当访问的地址没有route配置时，自动跳转。
+- `before`:所有的url跳转之前执行，返回false则停止跳转。
+
+
 ##Use
 
-*router.js*
+*js/router.js*
 
 ```javascript
 import Router from '../plugin/vue-router';
@@ -34,8 +43,19 @@ var routes = {
     '/': {
         component: main,
         subRoutes: {
-            '/create/:id': {
-                name: 'create',
+            '/create1/:id': {
+                name: 'create1',
+                component: create
+            },
+            '/create2/:id': {
+                name: 'create2',
+                on:function(){
+                    alert(1);
+                },
+                leave:function(){
+                    alert(2);
+
+                },
                 component: create
             },
             '/welcome': {
@@ -45,6 +65,14 @@ var routes = {
             },
             "/alert":function(){
                 Log("test");
+            },
+            "/alert2":{
+                on:function(){
+                    $("#mate").addClass("show");
+                },
+                leave:function(){
+                    $("#mate").removeClass("show");
+                }
             }
         }
     }
@@ -56,8 +84,11 @@ let VueParam = {
 
 Vue.use(Router);
 var router = new Router({
-    history:false
+    history:true,
+    rootUrl:"/root",
+    defaultUrl:"/root"
 });
+
 
 router.map(routes);
 router.start(VueParam);
@@ -66,29 +97,32 @@ export default router;
 
 ```
 
-*menu.vue*
+*注意*：当配置了rootUrl时，无需将rootUrl添加至v-link中，包括调用go方法也无需添加。
+
+*components/menu.vue*
 ```html
 <template>
 <div class="menu">
 	<ul class="menuList">
-        <li><a v-link.literal="/welcome">首页</a></li>
-        <li><a v-link="{name:'create',params:{id:b},query:{query:1}}">测试{{a}}</a></li>
-        <li><a v-link="{name:'create',params:{id:a},query:{query:1}}">测试</a></li>
-        <li><a v-link.literal="/alert">测试</a></li>
+        <li><a v-link.literal="/welcome">welcome</a></li>
+        <li><a v-link="{name:'create1',params:{id:b},query:{query:1}}">create1{{a}}</a></li>
+        <li><a v-link="{name:'create1',params:{id:b},query:{query:1}}">create1{{b}}</a></li>
+        <li><a v-link="{name:'create2',params:{id:a},query:{query:1}}">create2</a></li>
+        <li><a v-link.literal="/alert">alert</a></li>
 	</ul>
 </div>
 </template>
 
 ```
-*create.vue*
+*components/create.vue*
 ```html
 <template>
 <div>
-	<button @click="go" class="button">首页</button>
+	<button @click="go" class="button">welcome</button>
 </div>
 </template>
 <script type="text/javascript">
-import Router from '../js/common/router';
+import Router from '../js/router';
 export default {
     data() {
         return {};

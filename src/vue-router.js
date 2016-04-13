@@ -4,7 +4,10 @@ import Utils from './utils';
 
 let Vue, installed = false;
 let defaultOption = {
-    history: false
+    history: false,
+    rootUrl:"",
+    defaultUrl:"/",
+    before:undefined
 }
 
 let getQueryStringArgs = (qs) => {
@@ -58,11 +61,21 @@ class VueRouter {
         Object.assign(this.options, defaultOption, options || {});
         this.options.html5history = this.options.history;
         this.options.notfound = function() {
-            vueRouter.getRouter().setRoute("/");
+            vueRouter.getRouter().setRoute(vueRouter.options.defaultUrl);
         };
+        let before = this.options.before;
         this.options.before = function() {
-            if (Utils.isObject(vueRouter.nowRoute) && Utils.isFunction(vueRouter.nowRoute.leave)) {
-                vueRouter.nowRoute.leave();
+            if(Utils.isFunction(before)){
+                let result2 = before.call(null,...arguments);
+                if(result2===false){
+                    return result2;
+                }
+            }
+            if(Utils.isObject(vueRouter.nowRoute) && Utils.isFunction(vueRouter.nowRoute.leave)) {
+                let result = vueRouter.nowRoute.leave.call(vueRouter);
+                if(result===false){
+                    return result;
+                }
             }
         }
         return this;
@@ -145,7 +158,7 @@ class VueRouter {
         let url, vueRouter = this;
         if (Utils.isObject(value)) {
             if (value.path) {
-                url = value.path;
+                url = vueRouter.options.rootUrl + value.path;
             } else if (value.name) {
                 url = vueRouter.routerNames[value.name].url;
             }
@@ -161,7 +174,7 @@ class VueRouter {
         }
 
         if (Utils.isString(value)) {
-            url = value;
+            url = vueRouter.options.rootUrl + value;
         }
         return url;
     }
@@ -175,13 +188,13 @@ class VueRouter {
                 let el = this.el;
                 if (vueRouter.router.history) {
                     el.href = url;
-                    el.addEventListener("click", function(event) {
-                        event.preventDefault();
-                        vueRouter.go(url);
-                    });
                 } else {
                     el.href = "#" + url;
                 }
+                el.addEventListener("click", function(event) {
+                    event.preventDefault();
+                    vueRouter._go(url);
+                });
             }
         });
     }
@@ -191,12 +204,18 @@ class VueRouter {
         return _loc.pathname + _loc.hash + _loc.search;
     }
 
+    _go(url) {
+        let vueRouter = this;
+        if (vueRouter._getNowPath() != url) {
+            vueRouter.goUrl = url;
+            vueRouter.router.setRoute(url);
+        }
+    }
+
     go(value) {
         let vueRouter = this;
         let url = vueRouter.ParseUrl(value);
-        if (vueRouter._getNowPath() != url) {
-            vueRouter.router.setRoute(url);
-        }
+        vueRouter._go(url);
     }
 
     getRouter() {
@@ -213,11 +232,14 @@ class VueRouter {
         let count = 0;
         for (let i of Object.keys(routes)) {
             let route = routes[i];
+            if(parent_url==""){
+                i = vueRouter.options.rootUrl + (i == "/" ? "" : i);
+            }
             let _id = (parent_ids[0] || "VueRouter") + "_" + count++;
             let url = (parent_url == "/" ? "" : parent_url) + i;
 
             let routeSet = vueRouter.routerParam[url] = {};
-
+            routeSet.url = url;
             if (Utils.isFunction(route)) {
                 let list = [...parent_ids];
                 routeSet.on = function() {
@@ -225,7 +247,7 @@ class VueRouter {
                     vueRouter.removeComponents = false;
                     vueRouter.changeComponents({ list, vm: vueRouter.vue });
                     vueRouter.delayOn = () => {
-                        route(...arguments);
+                        route.call(vueRouter,...arguments);
                     }
                 };
             } else if (Utils.isObject(route)) {
@@ -234,7 +256,7 @@ class VueRouter {
                     vueRouter.nowRoute = routeSet;
                     vueRouter.delayOn = () => {
                         if (Utils.isFunction(route.on)) {
-                            route.on(...arguments);
+                            route.on.call(vueRouter,...arguments);
                         }
                     }
                 };

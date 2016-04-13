@@ -21,7 +21,10 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var Vue = undefined,
     installed = false;
 var defaultOption = {
-    history: false
+    history: false,
+    rootUrl: "",
+    defaultUrl: "/",
+    before: undefined
 };
 
 var getQueryStringArgs = function getQueryStringArgs(qs) {
@@ -74,11 +77,21 @@ var VueRouter = function () {
         Object.assign(this.options, defaultOption, options || {});
         this.options.html5history = this.options.history;
         this.options.notfound = function () {
-            vueRouter.getRouter().setRoute("/");
+            vueRouter.getRouter().setRoute(vueRouter.options.defaultUrl);
         };
+        var before = this.options.before;
         this.options.before = function () {
+            if (_utils2.default.isFunction(before)) {
+                var result2 = before.call.apply(before, [null].concat(Array.prototype.slice.call(arguments)));
+                if (result2 === false) {
+                    return result2;
+                }
+            }
             if (_utils2.default.isObject(vueRouter.nowRoute) && _utils2.default.isFunction(vueRouter.nowRoute.leave)) {
-                vueRouter.nowRoute.leave();
+                var result = vueRouter.nowRoute.leave.call(vueRouter);
+                if (result === false) {
+                    return result;
+                }
             }
         };
         return this;
@@ -167,7 +180,7 @@ var VueRouter = function () {
                 vueRouter = this;
             if (_utils2.default.isObject(value)) {
                 if (value.path) {
-                    url = value.path;
+                    url = vueRouter.options.rootUrl + value.path;
                 } else if (value.name) {
                     url = vueRouter.routerNames[value.name].url;
                 }
@@ -204,7 +217,7 @@ var VueRouter = function () {
             }
 
             if (_utils2.default.isString(value)) {
-                url = value;
+                url = vueRouter.options.rootUrl + value;
             }
             return url;
         }
@@ -219,13 +232,13 @@ var VueRouter = function () {
                     var el = this.el;
                     if (vueRouter.router.history) {
                         el.href = url;
-                        el.addEventListener("click", function (event) {
-                            event.preventDefault();
-                            vueRouter.go(url);
-                        });
                     } else {
                         el.href = "#" + url;
                     }
+                    el.addEventListener("click", function (event) {
+                        event.preventDefault();
+                        vueRouter._go(url);
+                    });
                 }
             });
         }
@@ -236,13 +249,20 @@ var VueRouter = function () {
             return _loc.pathname + _loc.hash + _loc.search;
         }
     }, {
+        key: "_go",
+        value: function _go(url) {
+            var vueRouter = this;
+            if (vueRouter._getNowPath() != url) {
+                vueRouter.goUrl = url;
+                vueRouter.router.setRoute(url);
+            }
+        }
+    }, {
         key: "go",
         value: function go(value) {
             var vueRouter = this;
             var url = vueRouter.ParseUrl(value);
-            if (vueRouter._getNowPath() != url) {
-                vueRouter.router.setRoute(url);
-            }
+            vueRouter._go(url);
         }
     }, {
         key: "getRouter",
@@ -274,11 +294,14 @@ var VueRouter = function () {
                     var i = _step2.value;
 
                     var route = routes[i];
+                    if (parent_url == "") {
+                        i = vueRouter.options.rootUrl + (i == "/" ? "" : i);
+                    }
                     var _id = (parent_ids[0] || "VueRouter") + "_" + count++;
                     var url = (parent_url == "/" ? "" : parent_url) + i;
 
                     var routeSet = vueRouter.routerParam[url] = {};
-
+                    routeSet.url = url;
                     if (_utils2.default.isFunction(route)) {
                         (function () {
                             var list = [].concat(_toConsumableArray(parent_ids));
@@ -289,7 +312,7 @@ var VueRouter = function () {
                                 vueRouter.removeComponents = false;
                                 vueRouter.changeComponents({ list: list, vm: vueRouter.vue });
                                 vueRouter.delayOn = function () {
-                                    route.apply(undefined, _arguments);
+                                    route.call.apply(route, [vueRouter].concat(Array.prototype.slice.call(_arguments)));
                                 };
                             };
                         })();
@@ -302,7 +325,9 @@ var VueRouter = function () {
                                 vueRouter.nowRoute = routeSet;
                                 vueRouter.delayOn = function () {
                                     if (_utils2.default.isFunction(route.on)) {
-                                        route.on.apply(route, _arguments2);
+                                        var _route$on;
+
+                                        (_route$on = route.on).call.apply(_route$on, [vueRouter].concat(Array.prototype.slice.call(_arguments2)));
                                     }
                                 };
                             };
