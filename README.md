@@ -9,6 +9,7 @@
 - route同配置无法重加载问题，"/example/:id" url新的id无法重加载。  
 - 支持函数处理的url跳转
 
+
 ##Install
 ###npm install
 ```
