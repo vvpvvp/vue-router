@@ -113,7 +113,6 @@ var VueRouter = function () {
             var vueRouter = this;
 
             vueRouter.dealRoutes({ routes: routes });
-            console.log(vueRouter.routerParam);
             var router = vueRouter.router = (0, _director.Router)().configure(vueRouter.options);
             router.param('name', /([\u4e00-\u9fa5\w]+)/);
             router.mount(vueRouter.routerParam);

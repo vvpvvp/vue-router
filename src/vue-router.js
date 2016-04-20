@@ -94,7 +94,6 @@ class VueRouter {
         let vueRouter = this;
 
         vueRouter.dealRoutes({ routes });
-        console.log(vueRouter.routerParam);
         let router = vueRouter.router = Router().configure(vueRouter.options);
         router.param('name', /([\u4e00-\u9fa5\w]+)/);
         router.mount(vueRouter.routerParam);
