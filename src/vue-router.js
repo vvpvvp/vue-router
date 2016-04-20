@@ -238,6 +238,7 @@ class VueRouter {
         vueRouter.vue.$route.params = urlParam;
         vueRouter.vue.$route.url = _url;
         vueRouter.vue.$route.query = getQueryStringArgs(_url);
+        return urlParam;
     }
 
     dealRoutes({ routes, parent_url = "", parent_ids = [] }) {
@@ -263,22 +264,22 @@ class VueRouter {
             if (Utils.isFunction(route)) {
                 let list = [...parent_ids];
                 routeSet.on = function() {
-                    vueRouter.initParam(params,arguments);
+                    let urlParam = vueRouter.initParam(params,arguments);
                     vueRouter.nowRoute = routeSet;
                     vueRouter.removeComponents = false;
                     vueRouter.changeComponents({ list, vm: vueRouter.vue });
                     vueRouter.delayOn = () => {
-                        route.call(vueRouter,...arguments);
+                        route.call(vueRouter,urlParam);
                     }
                 };
             } else if (Utils.isObject(route)) {
 
                 let routeSet_on = function() {
-                    vueRouter.initParam(params,arguments);
+                    let urlParam = vueRouter.initParam(params,arguments);
                     vueRouter.nowRoute = routeSet;
                     vueRouter.delayOn = () => {
                         if (Utils.isFunction(route.on)) {
-                            route.on.call(vueRouter,...arguments);
+                            route.on.call(vueRouter,urlParam);
                         }
                     }
                 };

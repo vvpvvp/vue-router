@@ -287,6 +287,7 @@ var VueRouter = function () {
             vueRouter.vue.$route.params = urlParam;
             vueRouter.vue.$route.url = _url;
             vueRouter.vue.$route.query = getQueryStringArgs(_url);
+            return urlParam;
         }
     }, {
         key: "dealRoutes",
@@ -327,14 +328,12 @@ var VueRouter = function () {
                         (function () {
                             var list = [].concat(_toConsumableArray(parent_ids));
                             routeSet.on = function () {
-                                var _arguments = arguments;
-
-                                vueRouter.initParam(params, arguments);
+                                var urlParam = vueRouter.initParam(params, arguments);
                                 vueRouter.nowRoute = routeSet;
                                 vueRouter.removeComponents = false;
                                 vueRouter.changeComponents({ list: list, vm: vueRouter.vue });
                                 vueRouter.delayOn = function () {
-                                    route.call.apply(route, [vueRouter].concat(Array.prototype.slice.call(_arguments)));
+                                    route.call(vueRouter, urlParam);
                                 };
                             };
                         })();
@@ -342,15 +341,11 @@ var VueRouter = function () {
                         (function () {
 
                             var routeSet_on = function routeSet_on() {
-                                var _arguments2 = arguments;
-
-                                vueRouter.initParam(params, arguments);
+                                var urlParam = vueRouter.initParam(params, arguments);
                                 vueRouter.nowRoute = routeSet;
                                 vueRouter.delayOn = function () {
                                     if (_utils2.default.isFunction(route.on)) {
-                                        var _route$on;
-
-                                        (_route$on = route.on).call.apply(_route$on, [vueRouter].concat(Array.prototype.slice.call(_arguments2)));
+                                        route.on.call(vueRouter, urlParam);
                                     }
                                 };
                             };
