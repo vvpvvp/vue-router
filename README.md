@@ -80,7 +80,13 @@ var routes = {
                 leave:function(){
                     console.log("welcome leave");
                 },
-                component: create
+                component: create,
+                subRoutes:{
+                    "/:title":function(param){
+                        console.log(param.title);
+                        console.log(param.id);
+                    }
+                }
             },
             '/welcome': {
                 component: function(resolve){
