@@ -6,8 +6,15 @@
 
 去除vue-router原生bug： 
 - HTML5模式下，访问两次同样的地址，记录两次访问
-- 配置/example/:id ,/example/1 跳转到/example/2 时不会重新渲染。  
+- 配置/example/:id ,/example/1 跳转到/example/2 时不会重新渲染。 
+
+支持函数处理式的url跳转
 - 支持url跳转进行函数处理
+- 对url跳转添加了before,on,leave事件
+
+原生vue实例
+- 传递Vue实例参数，可以配合vuex使用。
+- url事件中，this.vue可访问root vue。
 
 
 ##Install
