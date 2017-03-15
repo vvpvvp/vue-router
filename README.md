@@ -2,6 +2,8 @@
 
 ## A router for Vue.js
 
+本版本适用于Vue2.0，Vue1.0请前往[1.0版本](https://github.com/vvpvvp/vue-router/tree/1.0)
+
 重写vue的router，使用Director作为底层框架。 
 
 去除vue-router原生bug： 
