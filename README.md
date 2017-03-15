@@ -1,6 +1,6 @@
-#vue-router-tiny
+# vue-router-tiny
 
-##A router for Vue.js
+## A router for Vue.js
 
 重写vue的router，使用Director作为底层框架。 
 
@@ -17,18 +17,18 @@
 - url事件中，this.vue可访问root vue。
 
 
-##Install
-###npm install
+## Install
+### npm install
 ```
 npm install vue-router-tiny
 ```
 
-###Download
+### Download
 ```
 git clone https://github.com/vvpvvp/vue-router
 ```
 
-##option
+## option
 
 - **history**: 是否为html5模式
 - **rootUrl**: 为所有的url都添加root，全局添加前缀url
@@ -36,7 +36,7 @@ git clone https://github.com/vvpvvp/vue-router
 - **before**: 所有的url跳转之前执行，返回false则停止跳转。
 
 
-##Use
+## Use
 
 **main.html**
 
@@ -140,13 +140,13 @@ export default router;
 ```html
 <template>
 <div class="menu">
-	<ul class="menuList">
+    <ul class="menuList">
         <li><a v-link.literal="/welcome">welcome</a></li>
         <li><a v-link="{name:'create1',params:{id:b},query:{query:1}}">create1{{a}}</a></li>
         <li><a v-link="{name:'create1',params:{id:b},query:{query:1}}">create1{{b}}</a></li>
         <li><a v-link="{name:'create2',params:{id:a},query:{query:1}}">create2</a></li>
         <li><a v-link.literal="/alert">alert</a></li>
-	</ul>
+    </ul>
 </div>
 </template>
 
@@ -155,7 +155,7 @@ export default router;
 ```html
 <template>
 <div>
-	<button @click="go" class="button">welcome</button>
+    <button @click="go" class="button">welcome</button>
 </div>
 </template>
 <script type="text/javascript">
@@ -165,14 +165,14 @@ export default {
         return {};
     },
     methods:{
-    	go(){
+        go(){
             Router.go("/welcome");
-    	}
+        }
     }
 }
 </script>
 
 ```
-##Dependences
+## Dependences
 - [Director](https://github.com/flatiron/director)
 - [Vue](http://www.vuejs.org/)
